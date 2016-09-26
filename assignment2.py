@@ -3,8 +3,7 @@ import os.path
 import crypt
 
 
-def getArguments():
-   return sys.argv[1], sys.argv[2]
+
 
 def openFile(filename):
    if os.path.isfile(filename):
@@ -13,20 +12,9 @@ def openFile(filename):
       else:
          sys.exit("File not found.")
 
-def crack(hash, dictPath, ctype, salt):
-   insalt = '${}${}$'.format(ctype, salt)
-
-   dict = openFile(dictPath)
-
-   for password in dict:
-      if crypt.crypt(password.strip(), insalt) == hash:
-         sys.exit("Found password:" + password)
-   sys.exit("Password not found in dictionary.")
-
 def getPassword(user, shadow):
    for line in shadow:
       line = line.split(":")
-
       if line[0] == user:
          if line[1] == "*":
             sys.exit("user does not have a password.")
@@ -34,19 +22,31 @@ def getPassword(user, shadow):
             return line[1]
    sys.exit("no user found.")
 
+def crack(hash, dictPath, ctype, salt):
+   insalt = '${}${}$'.format(ctype, salt)
+
+   dict = openFile(dictPath)
+   for password in dict:
+      if crypt.crypt(password.strip(), insalt) == hash:
+         sys.exit("Found password:" + password)
+   sys.exit("Password not found in dictionary.")
+
+def getArg():
+   return sys.argv[1], sys.argv[2]
+
+
 
 if len(sys.argv) < 3:
    sys.exit("Error")
 else:
-   user, shadowfile = getArguments()
-
-   dictPath = "./dictionary.txt"
-
+   user, shadowfile = getArg()
    if len(sys.argv) > 3:
       if sys.argv[3] == "-d" and len(sys.argv) > 4:
          dictPath = sys.argv[4]
       else:
-         sys.exit("Invalid Arguments.")
+         sys.exit("Error.")
+
+   dictPath = "./dictionary.txt"
 
    shadow = openFile(shadowfile)
    hash = getPassword(user, shadow)
